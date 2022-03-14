@@ -159,23 +159,24 @@ st.header('Ultimate Game Recommender System')
 # st.subheader(str(t.isloaded))
 
 # st.title('Counter Example')
-if 't' not in st.session_state:
-    st.session_state.t = load_data()
-    st.session_state.t.start()
+# if 't' not in st.session_state:
+#     st.session_state.t = load_data()
+#     st.session_state.t.start()
+
 
 
 
 
 try:
     
-    game_list = st.session_state.t.df['title'].values
+    game_list = t.df['title'].values
     selected_game = st.selectbox(
         "Type or select a game from the dropdown",
         game_list
     )
 
     if st.button('Show Recommendation'):
-        recommended_game_names, recommended_game_posters = get_recommendations(selected_game, st.session_state.t.df, st.session_state.t.similarity)
+        recommended_game_names, recommended_game_posters = get_recommendations(selected_game, t.df, t.similarity)
         col1, col2, col3, col4, col5 = st.columns(5)
         with col1:
             st.text(recommended_game_names[0])
@@ -195,3 +196,5 @@ try:
             st.image(recommended_game_posters[4])
 except:
     st.header('Loading data')
+    t = load_data()
+    t.start()
