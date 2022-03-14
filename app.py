@@ -1,14 +1,14 @@
 from pdb import post_mortem
 import pickle
 import streamlit as st
+import joblib
 from bs4 import BeautifulSoup
 import pandas as pd
 import requests
+import threading
 
 
-#Import the pickle files we will need
-df = pickle.load(open('./game_list.pkl','rb'))
-similarity = pickle.load(open('./similarity.pkl','rb'))
+
 
 #This function fetches the link of the image on the game page
 def fetch_poster(game_id):
@@ -25,7 +25,7 @@ def fetch_poster(game_id):
     return img_link
 
 #This function incorporates the top 5 reccomendations based on cosine similarity, but also factors in developer, genre, and meta_critic scores
-def get_recommendations(title):
+def get_recommendations(title, df, similarity):
     """
     We are incorperating pandas, because I need to sort the top cosine similarity games in terms of developer, genre, and meta_critic scores
     """
@@ -131,34 +131,67 @@ def set_bg_hack_url():
          """,
          unsafe_allow_html=True
      )
+
+#Import the pickle files we will need
+# df = pickle.load(open('./game_list.pkl','rb'))
+# similarity = pickle.load(open('./similarity.pkl','rb'))
+
+class load_data(threading.Thread):
+    def __init__(self):
+        super(load_data, self).__init__()
+        self.df = None
+        self.similarity = None
+        self.isloaded = False
+    def run(self):
+        self.isloaded = False
+        #Import the pickle files we will need
+        self.df = pickle.load(open('./game_list.pkl','rb'))
+        self.similarity = pickle.load(open('./similarity.pkl','rb'))
+        self.isloaded = True
+
+
 #Call background image
 set_bg_hack_url()
 
+
 st.header('Ultimate Game Recommender System')
 
+# st.subheader(str(t.isloaded))
 
-game_list = df['title'].values
-selected_game = st.selectbox(
-    "Type or select a game from the dropdown",
-    game_list
-)
+# st.title('Counter Example')
+if 't' not in st.session_state:
+    st.session_state.t = load_data()
+    st.session_state.t.start()
 
-if st.button('Show Recommendation'):
-    recommended_game_names, recommended_game_posters = get_recommendations(selected_game)
-    col1, col2, col3, col4, col5 = st.columns(5)
-    with col1:
-        st.text(recommended_game_names[0])
-        st.image(recommended_game_posters[0])
-    with col2:
-        st.text(recommended_game_names[1])
-        st.image(recommended_game_posters[1])
 
-    with col3:
-        st.text(recommended_game_names[2])
-        st.image(recommended_game_posters[2])
-    with col4:
-        st.text(recommended_game_names[3])
-        st.image(recommended_game_posters[3])
-    with col5:
-        st.text(recommended_game_names[4])
-        st.image(recommended_game_posters[4])
+
+
+try:
+    
+    game_list = st.session_state.t.df['title'].values
+    selected_game = st.selectbox(
+        "Type or select a game from the dropdown",
+        game_list
+    )
+
+    if st.button('Show Recommendation'):
+        recommended_game_names, recommended_game_posters = get_recommendations(selected_game, st.session_state.t.df, st.session_state.t.similarity)
+        col1, col2, col3, col4, col5 = st.columns(5)
+        with col1:
+            st.text(recommended_game_names[0])
+            st.image(recommended_game_posters[0])
+        with col2:
+            st.text(recommended_game_names[1])
+            st.image(recommended_game_posters[1])
+
+        with col3:
+            st.text(recommended_game_names[2])
+            st.image(recommended_game_posters[2])
+        with col4:
+            st.text(recommended_game_names[3])
+            st.image(recommended_game_posters[3])
+        with col5:
+            st.text(recommended_game_names[4])
+            st.image(recommended_game_posters[4])
+except:
+    st.header('Loading data')
