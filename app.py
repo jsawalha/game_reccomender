@@ -160,9 +160,10 @@ st.header('Ultimate Game Recommender System')
 # st.subheader(str(t.isloaded))
 
 # st.title('Counter Example')
-if 't' not in server_state:
-    server_state.t = load_data()
-    server_state.t.start()
+with server_state_lock["count"]:
+    if 't' not in server_state:
+        server_state.t = load_data()
+        server_state.t.start()
 
 
 
