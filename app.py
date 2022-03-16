@@ -25,7 +25,7 @@ def fetch_poster(game_id):
     return img_link
 
 #This function incorporates the top 5 reccomendations based on cosine similarity, but also factors in developer, genre, and meta_critic scores
-def get_recommendations(title, similarity):
+def get_recommendations(title):
     """
     We are incorperating pandas, because I need to sort the top cosine similarity games in terms of developer, genre, and meta_critic scores
     """
@@ -136,9 +136,6 @@ set_bg_hack_url()
 
 st.header('Ultimate Game Recommender System')
 
-if 't' not in st.session_state:
-    st.session_state.t = similarity
-
 
 game_list = df['title'].values
 selected_game = st.selectbox(
@@ -147,7 +144,7 @@ selected_game = st.selectbox(
 )
 
 if st.button('Show Recommendation'):
-    recommended_game_names, recommended_game_posters = get_recommendations(selected_game, st.session_state.t)
+    recommended_game_names, recommended_game_posters = get_recommendations(selected_game)
     col1, col2, col3, col4, col5 = st.columns(5)
     with col1:
         st.text(recommended_game_names[0])
