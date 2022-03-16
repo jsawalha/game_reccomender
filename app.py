@@ -134,21 +134,24 @@ def set_bg_hack_url():
      )
 
 #Import the pickle files we will need
-# df = pickle.load(open('./game_list.pkl','rb'))
-# similarity = pickle.load(open('./similarity.pkl','rb'))
+df = pickle.load(open('./game_list.pkl','rb'))
+similarity = pickle.load(open('./similarity.pkl','rb'))
 
-class load_data(threading.Thread):
-    def __init__(self):
-        super(load_data, self).__init__()
-        self.df = None
-        self.similarity = None
-        self.isloaded = False
-    def run(self):
-        self.isloaded = False
-        #Import the pickle files we will need
-        self.df = pickle.load(open('./game_list.pkl','rb'))
-        self.similarity = pickle.load(open('./similarity.pkl','rb'))
-        self.isloaded = True
+server_state.df = df
+server_state.similarity = similarity
+
+# class load_data(threading.Thread):
+#     def __init__(self):
+#         super(load_data, self).__init__()
+#         self.df = None
+#         self.similarity = None
+#         self.isloaded = False
+#     def run(self):
+#         self.isloaded = False
+#         #Import the pickle files we will need
+#         self.df = st.cache(pickle.load(open('./game_list.pkl','rb')))
+#         self.similarity = st.cache(pickle.load(open('./similarity.pkl','rb')))
+#         self.isloaded = True
 
 
 #Call background image
@@ -160,39 +163,41 @@ st.header('Ultimate Game Recommender System')
 # st.subheader(str(t.isloaded))
 
 # st.title('Counter Example')
-with server_state_lock["count"]:
-    if 't' not in server_state:
-        server_state.t = load_data()
-        server_state.t.start()
+
+
+# t = load_data()
+# t.start()
 
 
 
 
 
+try:
 
-game_list = server_state.t.df['title'].values
-selected_game = st.selectbox(
-    "Type or select a game from the dropdown",
-    game_list
-)
+    game_list = server_state.df['title'].values
+    selected_game = st.selectbox(
+        "Type or select a game from the dropdown",
+        game_list
+    )
 
-if st.button('Show Recommendation'):
-    recommended_game_names, recommended_game_posters = get_recommendations(selected_game, server_state.t.df, server_state.t.similarity)
-    col1, col2, col3, col4, col5 = st.columns(5)
-    with col1:
-        st.text(recommended_game_names[0])
-        st.image(recommended_game_posters[0])
-    with col2:
-        st.text(recommended_game_names[1])
-        st.image(recommended_game_posters[1])
+    if st.button('Show Recommendation'):
+        recommended_game_names, recommended_game_posters = get_recommendations(selected_game, server_state.df, server_state.similarity)
+        col1, col2, col3, col4, col5 = st.columns(5)
+        with col1:
+            st.text(recommended_game_names[0])
+            st.image(recommended_game_posters[0])
+        with col2:
+            st.text(recommended_game_names[1])
+            st.image(recommended_game_posters[1])
 
-    with col3:
-        st.text(recommended_game_names[2])
-        st.image(recommended_game_posters[2])
-    with col4:
-        st.text(recommended_game_names[3])
-        st.image(recommended_game_posters[3])
-    with col5:
-        st.text(recommended_game_names[4])
-        st.image(recommended_game_posters[4])
-
+        with col3:
+            st.text(recommended_game_names[2])
+            st.image(recommended_game_posters[2])
+        with col4:
+            st.text(recommended_game_names[3])
+            st.image(recommended_game_posters[3])
+        with col5:
+            st.text(recommended_game_names[4])
+            st.image(recommended_game_posters[4])
+except:
+    st.header('Loading data')
